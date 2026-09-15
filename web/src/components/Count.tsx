@@ -24,7 +24,8 @@ export function Count({ value, fmt, className, duration = 600 }: { value: number
     const t0 = performance.now();
     let raf = 0;
     const step = (t: number) => {
-      const k = Math.min(1, (t - t0) / duration);
+      // The first frame's timestamp can precede t0 by a frame; clamp so the value never overshoots.
+      const k = Math.max(0, Math.min(1, (t - t0) / duration));
       const e = 1 - Math.pow(1 - k, 3);
       const v = from + (value - from) * e;
       current.current = v;

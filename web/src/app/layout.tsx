@@ -2,8 +2,6 @@ import type { Metadata, Viewport } from "next";
 import { Fraunces, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
 
 const display = Fraunces({
   subsets: ["latin"],
@@ -30,12 +28,8 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${display.variable} ${sans.variable} ${mono.variable}`}>
-      <body className="min-h-screen flex flex-col">
-        <Providers>
-          <Header />
-          <main className="mx-auto w-full max-w-6xl flex-1 px-4 pt-10 sm:px-6 sm:pt-14">{children}</main>
-          <Footer />
-        </Providers>
+      <body className="min-h-screen">
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

@@ -10,6 +10,7 @@ import { deployed, deployments } from "@/lib/deployments";
 import { fmtBps, fmtEth, fmtNumEth, fmtNumInt, fmtToken, n18, NA } from "@/lib/format";
 import { priceThalerPerEth, quoteBuy, quoteSell } from "@/lib/pool";
 import { POLL_MS } from "@/lib/wagmi";
+import { ConnectButton } from "./ConnectButton";
 import { Count } from "./Count";
 import { DeploymentPending, Muted, TxStatus } from "./ui";
 
@@ -145,7 +146,7 @@ export function SwapCard() {
 
         <div className="mt-5">
           {!isConnected ? (
-            <button className="btn btn-primary btn-lg w-full" disabled>Connect a wallet to swap</button>
+            <ConnectButton label="Connect a wallet to swap" className="btn-primary w-full" size="lg" />
           ) : !onSepolia ? (
             <button className="btn btn-lg w-full" disabled>Switch to Sepolia</button>
           ) : needsApproval ? (

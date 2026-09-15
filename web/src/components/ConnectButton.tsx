@@ -6,8 +6,13 @@ import { sepolia } from "wagmi/chains";
 import { shortAddr, errorMessage } from "@/lib/format";
 import { etherscanAddress } from "@/lib/deployments";
 
-export function ConnectButton() {
+/**
+ * Opens the wallet dialog; shows the address (or "Switch to Sepolia") once connected. `size` picks the
+ * button height: `sm` for the top bar, `md` / `lg` for calls to action inside cards.
+ */
+export function ConnectButton({ label = "Connect", className = "", size = "sm" }: { label?: string; className?: string; size?: "sm" | "md" | "lg" }) {
   const { address, isConnected, chainId, connector } = useAccount();
+  const sizeCls = size === "sm" ? "btn-sm" : size === "lg" ? "btn-lg" : "";
   const { disconnect } = useDisconnect();
   const { switchChain, isPending: switching } = useSwitchChain();
   const [open, setOpen] = useState(false);
@@ -16,7 +21,7 @@ export function ConnectButton() {
   useEffect(() => setMounted(true), []);
 
   if (!mounted) {
-    return <button className="btn btn-sm" disabled>Connect</button>;
+    return <button className={`btn ${sizeCls} ${className}`} disabled>{label}</button>;
   }
 
   if (isConnected && address) {
@@ -24,11 +29,11 @@ export function ConnectButton() {
     return (
       <div className="relative">
         {wrong ? (
-          <button className="btn btn-sm" style={{ borderColor: "var(--color-bad)", color: "var(--color-bad)" }} onClick={() => switchChain({ chainId: sepolia.id })} disabled={switching}>
+          <button className={`btn ${sizeCls}`} style={{ borderColor: "var(--color-bad)", color: "var(--color-bad)" }} onClick={() => switchChain({ chainId: sepolia.id })} disabled={switching}>
             {switching ? "Switching…" : "Switch to Sepolia"}
           </button>
         ) : (
-          <button className="btn btn-sm num" onClick={() => setMenu((m) => !m)} aria-expanded={menu}>
+          <button className={`btn ${sizeCls} num`} onClick={() => setMenu((m) => !m)} aria-expanded={menu}>
             <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ background: "var(--color-good)" }} />
             {shortAddr(address)}
           </button>
@@ -50,7 +55,7 @@ export function ConnectButton() {
 
   return (
     <>
-      <button className="btn btn-sm" onClick={() => setOpen(true)}>Connect</button>
+      <button className={`btn ${sizeCls} ${className}`} onClick={() => setOpen(true)}>{label}</button>
       {open && <ConnectModal onClose={() => setOpen(false)} />}
     </>
   );

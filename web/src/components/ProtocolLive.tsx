@@ -6,7 +6,7 @@ import { epochClock, useCharterSale, useParams, usePolicy, useTreasury } from "@
 import { useNow } from "@/hooks/useNow";
 import { deployed, deployments } from "@/lib/deployments";
 import { fmtBps, fmtClock, fmtDuration, fmtEth, fmtInt, fmtMult, fmtNum, fmtNumEth, fmtNumInt, fmtPeriod, fmtTimestamp, fmtToken, n18, nRaw, NA } from "@/lib/format";
-import { ActivityFeed } from "./ActivityFeed";
+import { ConnectButton } from "./ConnectButton";
 import { Count } from "./Count";
 import { TreasurySplit } from "./Dashboard";
 import { DeploymentPending, Muted, NumSection, Tile, TxStatus } from "./ui";
@@ -26,19 +26,13 @@ export function ProtocolLive() {
 }
 
 function Inner() {
-  const { isConnected, chainId } = useAccount();
-  const canAct = isConnected && chainId === deployments.chainId;
   const p = useParams();
   const s = usePolicy();
   const t = useTreasury();
   const sale = useCharterSale();
   const now = useNow();
 
-  const rollTx = useTx(() => { s.refetch(); t.refetch(); });
-  const tickTx = useTx(() => { t.refetch(); s.refetch(); });
-
   const { epoch, toNext } = epochClock(p, s.currentEpoch, now);
-  const unrolled = s.currentEpoch !== undefined && s.lastRolledEpoch !== undefined ? s.currentEpoch - 1n - s.lastRolledEpoch : undefined;
   const tickIn = t.lastTick !== undefined && p.tickInterval !== undefined && now > 0 ? Number(t.lastTick + p.tickInterval) - now : undefined;
   const regime = s.regime === undefined ? NA : s.regime === 1 ? "Contraction" : "Expansion";
   const dayEnd = now > 0 ? 86_400 - (now % 86_400) : undefined;
@@ -76,38 +70,7 @@ function Inner() {
         </div>
       </NumSection>
 
-      <NumSection n="03" label="Permissionless actions" title="Anyone can turn the clock.">
-        <div className="grid gap-px bg-line md:grid-cols-2">
-          <div className="rise bg-ink-2 p-5 sm:p-6">
-            <div className="flex items-baseline justify-between gap-4">
-              <div className="font-display text-xl">Roll epochs</div>
-              <div className="num text-xs text-paper-3">{unrolled === undefined ? NA : unrolled > 0n ? `${fmtInt(unrolled)} completed, not yet rolled` : "up to date"}</div>
-            </div>
-            <p className="mt-2 text-sm leading-relaxed text-paper-2">Books every completed epoch: the hook reports ETH in and out, the bank adjusts the multiplier and regime. Every write to the bank rolls first, so this matters only when the system is quiet.</p>
-            <button className={`btn mt-4 w-full ${unrolled && unrolled > 0n ? "btn-primary" : ""}`} disabled={!canAct || rollTx.busy} onClick={() => rollTx.send({ address: deployments.centralBank, abi: centralBankAbi, functionName: "rollEpochs" })}>
-              {rollTx.busy ? "Rolling" : !isConnected ? "Connect to roll" : "Roll epochs"}
-            </button>
-            <TxStatus phase={rollTx.phase} hash={rollTx.hash} error={rollTx.error} onReset={rollTx.reset} successText="Rolled." />
-          </div>
-          <div className="rise bg-ink-2 p-5 sm:p-6">
-            <div className="flex items-baseline justify-between gap-4">
-              <div className="font-display text-xl">Tick treasury</div>
-              <div className="num text-xs text-paper-3">{tickIn === undefined ? NA : tickIn <= 0 ? "buyback ready" : `buyback in ${fmtClock(tickIn)}`}</div>
-            </div>
-            <p className="mt-2 text-sm leading-relaxed text-paper-2">Allocates whatever landed since the last split, runs a buyback if the interval has passed and the contraction vault has ETH, then compounds POL when its vault crosses the threshold. You pay the gas.</p>
-            <button className={`btn mt-4 w-full ${tickIn !== undefined && tickIn <= 0 ? "btn-primary" : ""}`} disabled={!canAct || tickTx.busy} onClick={() => tickTx.send({ address: deployments.treasury, abi: treasuryAbi, functionName: "tick" })}>
-              {tickTx.busy ? "Ticking" : !isConnected ? "Connect to tick" : "Tick treasury"}
-            </button>
-            <TxStatus phase={tickTx.phase} hash={tickTx.hash} error={tickTx.error} onReset={tickTx.reset} successText="Ticked." />
-          </div>
-        </div>
-      </NumSection>
-
-      <NumSection n="04" label="Activity" title="What just happened.">
-        <ActivityFeed />
-      </NumSection>
-
-      <NumSection n="05" label="Flow" title="Through the pool.">
+      <NumSection n="03" label="Flow" title="Through the pool.">
         <div className="grid grid-cols-2 gap-px bg-line lg:grid-cols-4">
           <Tile label="Buy tax now" value={fmtBps(s.buyTaxBps, 2)} sub={p.launchTaxBps !== undefined ? `${fmtBps(p.launchTaxBps, 0)} at launch, floor ${fmtBps(p.buyFloorBps, 0)}` : NA} />
           <Tile label="Sell tax now" value={fmtBps(s.sellTaxBps, 2)} sub={p.sellFloorBps !== undefined ? `floor ${fmtBps(p.sellFloorBps, 0)} · half-life ${fmtPeriod(p.taxHalfLife)}` : NA} />
@@ -171,7 +134,7 @@ function ParamTable() {
   ];
   const fromChain = rows.filter((r) => r.chain !== undefined).length;
   return (
-    <NumSection n={deployed ? "06" : "01"} label="Parameters" title="Every constant." aside={<span className="num text-xs text-paper-3">{deployed ? `${fromChain} of ${rows.length} read from the chain` : "documented values"}</span>}>
+    <NumSection n={deployed ? "04" : "01"} label="Parameters" title="Every constant." aside={<span className="num text-xs text-paper-3">{deployed ? `${fromChain} of ${rows.length} read from the chain` : "documented values"}</span>}>
       <div className="card overflow-x-auto">
         <table className="feed" style={{ fontFamily: "var(--font-sans)", fontSize: "0.8125rem" }}>
           <thead>
@@ -197,5 +160,55 @@ function ParamTable() {
       </div>
       <div className="mt-3"><Muted>Values marked doc are not exposed by the interface and come from the whitepaper. All others are read from the deployed contracts.</Muted></div>
     </NumSection>
+  );
+}
+
+/** "Anyone can turn the clock": roll epochs and tick the treasury, with tx states. */
+export function UtilityCards() {
+  const { isConnected, chainId } = useAccount();
+  const canAct = isConnected && chainId === deployments.chainId;
+  const p = useParams();
+  const s = usePolicy();
+  const t = useTreasury();
+  const now = useNow();
+  const rollTx = useTx(() => { s.refetch(); t.refetch(); });
+  const tickTx = useTx(() => { t.refetch(); s.refetch(); });
+  const unrolled = s.currentEpoch !== undefined && s.lastRolledEpoch !== undefined ? s.currentEpoch - 1n - s.lastRolledEpoch : undefined;
+  const tickIn = t.lastTick !== undefined && p.tickInterval !== undefined && now > 0 ? Number(t.lastTick + p.tickInterval) - now : undefined;
+
+  if (!deployed) return <DeploymentPending compact />;
+  return (
+    <div className="grid gap-px bg-line md:grid-cols-2">
+      <div className="rise bg-ink-2 p-5 sm:p-6">
+        <div className="flex items-baseline justify-between gap-4">
+          <div className="font-display text-xl">Roll epochs</div>
+          <div className="num text-xs text-paper-3">{unrolled === undefined ? NA : unrolled > 0n ? `${fmtInt(unrolled)} completed, not yet rolled` : "up to date"}</div>
+        </div>
+        <p className="mt-2 text-sm leading-relaxed text-paper-2">Books every completed epoch: the hook reports ETH in and out, the bank adjusts the multiplier and regime. Every write to the bank rolls first, so this matters only when the system is quiet.</p>
+        {!isConnected ? (
+          <ConnectButton label="Connect to roll" className={`mt-4 w-full ${unrolled && unrolled > 0n ? "btn-primary" : ""}`} size="md" />
+        ) : (
+          <button className={`btn mt-4 w-full ${unrolled && unrolled > 0n ? "btn-primary" : ""}`} disabled={!canAct || rollTx.busy} onClick={() => rollTx.send({ address: deployments.centralBank, abi: centralBankAbi, functionName: "rollEpochs" })}>
+            {rollTx.busy ? "Rolling" : "Roll epochs"}
+          </button>
+        )}
+        <TxStatus phase={rollTx.phase} hash={rollTx.hash} error={rollTx.error} onReset={rollTx.reset} successText="Rolled." />
+      </div>
+      <div className="rise bg-ink-2 p-5 sm:p-6">
+        <div className="flex items-baseline justify-between gap-4">
+          <div className="font-display text-xl">Tick treasury</div>
+          <div className="num text-xs text-paper-3">{tickIn === undefined ? NA : tickIn <= 0 ? "buyback ready" : `buyback in ${fmtClock(tickIn)}`}</div>
+        </div>
+        <p className="mt-2 text-sm leading-relaxed text-paper-2">Allocates whatever landed since the last split, runs a buyback if the interval has passed and the contraction vault has ETH, then compounds POL when its vault crosses the threshold. You pay the gas.</p>
+        {!isConnected ? (
+          <ConnectButton label="Connect to tick" className={`mt-4 w-full ${tickIn !== undefined && tickIn <= 0 ? "btn-primary" : ""}`} size="md" />
+        ) : (
+          <button className={`btn mt-4 w-full ${tickIn !== undefined && tickIn <= 0 ? "btn-primary" : ""}`} disabled={!canAct || tickTx.busy} onClick={() => tickTx.send({ address: deployments.treasury, abi: treasuryAbi, functionName: "tick" })}>
+            {tickTx.busy ? "Ticking" : "Tick treasury"}
+          </button>
+        )}
+        <TxStatus phase={tickTx.phase} hash={tickTx.hash} error={tickTx.error} onReset={tickTx.reset} successText="Ticked." />
+      </div>
+    </div>
   );
 }

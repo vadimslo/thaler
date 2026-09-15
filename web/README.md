@@ -4,7 +4,13 @@ Static site for Thaler on Ethereum Sepolia. Next.js 15 (App Router, static expor
 
 ## Routes
 
-`/` home · `/token` supply and swap · `/charters` mint, auction, my charters · `/protocol` every parameter and live reading, Tick and Roll epochs · `/contracts` addresses · `/whitepaper` rendered from `../docs/whitepaper.md` · `/updates` changelog from `src/content/updates.json`.
+One application shell (`src/components/shell/`): status strip on top, a 280px sidebar (a drawer under 1024px), breadcrumb and wallet button above the content, a floating "Live ledger" button. Every page lives under `/app/`:
+
+`/app/` home (state of the economy, notice, four tiles, position and auction cards, last 8 events, how it works) · `/app/banks/` founding mint, compact auction card, my charters with withdraw, open branch, resolve · `/app/auction/` charter and licence auctions with today's curves, roll epochs and tick treasury · `/app/swap/` the swap card with the supply bar · `/app/activity/` the full ledger with a type filter · `/app/protocol/` overview (mechanism, two doors, inspection) · `/app/protocol/token/` supply and burns · `/app/protocol/charters/` charters and auctions explained, with the live curve · `/app/protocol/params/` every tile, split bar and parameter · `/app/protocol/contracts/` addresses · `/app/updates/` changelog · `/app/whitepaper/` rendered from `../docs/whitepaper.md`.
+
+`/` and the old routes (`/token/`, `/charters/`, `/protocol/`, `/contracts/`, `/whitepaper/`, `/updates/`) are tiny pages with a meta refresh and a client redirect to the new location.
+
+Hero illustrations are read from `public/illustrations/{home,overview,token,charters,auction}.jpg` at build time (`src/app/app/layout.tsx`); a missing file falls back to the generative engraving in `src/components/Engraving.tsx`. `HeroCard` takes `position` (object-position for a source whose subject is off-centre), `shade="light"` for darker pictures, `short` (16:4.5) and `stackAside` (readouts in a column).
 
 ## Sync ABIs and addresses
 
@@ -54,7 +60,7 @@ Renders every live block (status strip, tiles, supply bar, treasury split, activ
 - Activity feed (`src/hooks/useActivity.ts`): reads `Taxed`, `FoundingMinted`, `AuctionBought`, `BranchOpened`, `Withdrawn`, `CharterResolved`, `EpochRolled`, `Buyback`, `PolCompounded` and `Allocated` with one `getLogs` per 5,000-block window, newest first from the latest block back to `deployments.block` until 20 rows are in hand, then only new blocks on each poll. Rows and the scanned range persist in `localStorage` (`thaler:activity:<chainId>:<centralBank>`). RPC failures retry with backoff; a hard failure keeps the last rows and shows "feed paused" with a 30s retry.
 - Status strip (`src/components/StatusStrip.tsx`) reads block number, epoch, multiplier, regime and taxes from the same hooks; the clock and the epoch countdown tick client-side.
 - The charter fee label reads `withdrawFeeBps` when the synced CentralBank interface exposes it and falls back to `resolveFeeBps` (`src/lib/abiFlags.ts`). The feed shows the `fee` field of `Withdrawn` when the event carries one.
-- `screenshots/` holds the last verification pass at 1440 and 375 wide.
+- `screenshots/` holds the last verification pass at 1440 and 375 wide (`pass3-*.png` for the app shell). Captured with headless Chrome against the served `out/`; the 375 set goes through `../.night/serve/mobile-wrap.html` (an iframe), since Chrome will not open a window narrower than about 500px.
 - Reads poll every 12s (auction price every 10s). Writes go through wagmi `writeContract` with pending / success / error states and Etherscan links.
 - Swap quotes are a constant-product estimate from the pool's `slot0` and `liquidity`, read from PoolManager storage via `extsload`. `minAmountOut` is 0 in v1.
 - Wallets: EIP-6963 discovered injected wallets plus a generic injected fallback. No WalletConnect.

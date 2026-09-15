@@ -173,7 +173,7 @@ async function fillTimestamps(client: PublicClient, rows: ActivityRow[]) {
 export function useActivity(limit = FEED_LIMIT) {
   const client = usePublicClient();
   const q = useQuery({
-    queryKey: ["activity", deployments.centralBank],
+    queryKey: ["activity", deployments.centralBank, limit],
     enabled: deployed && (MOCK || !!client),
     retry: false,
     refetchInterval: (query) => (query.state.status === "error" ? 30_000 : POLL_MS),

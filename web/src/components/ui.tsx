@@ -79,11 +79,11 @@ export function SegBar({ segments, className = "" }: { segments: Segment[]; clas
       <ul className="mt-3 grid grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-4">
         {segments.map((s) => (
           <li key={s.label} className="min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="inline-block h-2 w-2 shrink-0" style={{ background: s.color }} />
-              <span className="eyebrow truncate">{s.label}</span>
+            <div className="flex items-start gap-2">
+              <span className="mt-1 inline-block h-2 w-2 shrink-0" style={{ background: s.color }} />
+              <span className="eyebrow leading-snug">{s.label}</span>
             </div>
-            <div className="num mt-1 truncate text-sm text-paper">{s.value}</div>
+            <div className="num mt-1 break-words text-sm text-paper">{s.value}</div>
           </li>
         ))}
       </ul>
@@ -127,7 +127,7 @@ export function DeploymentPending({ compact = false }: { compact?: boolean }) {
         <div className="text-sm text-paper">Deployment pending</div>
         {!compact && (
           <div className="mt-0.5 text-xs text-paper-3">
-            Contracts are not on Sepolia yet. Live readings and actions appear here once addresses are published. See <Link href="/contracts/" className="underline underline-offset-2 hover:text-paper">Contracts</Link>.
+            Contracts are not on Sepolia yet. Live readings and actions appear here once addresses are published. See <Link href="/app/protocol/contracts/" className="underline underline-offset-2 hover:text-paper">Contracts</Link>.
           </div>
         )}
       </div>

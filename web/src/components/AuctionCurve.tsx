@@ -1,13 +1,15 @@
 "use client";
 
 /**
- * Today's Dutch-auction decay as a small SVG: opens at `open`, halves every `halfLife` seconds toward
- * `floor` over a 24-hour UTC day. `now` (seconds into the day) and `price` place the marker on the live reading.
+ * Today's Dutch-auction decay: opens at `open`, halves every `halfLife` seconds toward `floor` over a
+ * 24-hour UTC day. The chart is a fixed 120px tall at any width: the geometry is an SVG stretched to
+ * the box (x in tenths of a percent, y in pixels) and the labels and the live marker are HTML placed
+ * over it, so they stay 10px and legible on a phone.
  */
 export function AuctionCurve({ open, floor, halfLife, secondsIntoDay, price, className = "" }: { open: number; floor: number; halfLife: number; secondsIntoDay: number | undefined; price: number | undefined; className?: string }) {
-  const W = 480;
+  const W = 1000;
   const H = 120;
-  const pad = { l: 6, r: 6, t: 14, b: 18 };
+  const pad = { l: 8, r: 8, t: 14, b: 18 };
   const day = 86_400;
   const top = Math.max(open, floor * 1.0001);
   const x = (t: number) => pad.l + (t / day) * (W - pad.l - pad.r);
@@ -24,25 +26,32 @@ export function AuctionCurve({ open, floor, halfLife, secondsIntoDay, price, cla
   }
   const mx = secondsIntoDay === undefined ? undefined : x(secondsIntoDay);
   const my = price === undefined ? undefined : y(price);
+  const pct = (v: number) => `${(v / W) * 100}%`;
+  const nowRight = mx !== undefined && mx > W * 0.7;
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} width="100%" className={className} role="img" aria-label="Auction price over today, opening high and decaying toward the floor" style={{ display: "block", height: "auto" }}>
-      <line x1={pad.l} x2={W - pad.r} y1={y(floor)} y2={y(floor)} stroke="var(--color-line-2)" strokeDasharray="2 3" />
-      <line x1={pad.l} x2={W - pad.r} y1={y(open)} y2={y(open)} stroke="var(--color-line)" />
-      <path d={pts.join(" ")} fill="none" stroke="var(--color-brass)" strokeWidth="1.25" />
-      {mx !== undefined && (
-        <line x1={mx} x2={mx} y1={pad.t} y2={H - pad.b} stroke="var(--color-line-2)" />
-      )}
+    <div className={`curve ${className}`} role="img" aria-label="Auction price over today, opening high and decaying toward the floor">
+      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden="true">
+        <line x1={pad.l} x2={W - pad.r} y1={y(floor)} y2={y(floor)} stroke="var(--color-line-2)" strokeDasharray="2 3" vectorEffect="non-scaling-stroke" />
+        <line x1={pad.l} x2={W - pad.r} y1={y(open)} y2={y(open)} stroke="var(--color-line)" vectorEffect="non-scaling-stroke" />
+        <path d={pts.join(" ")} fill="none" stroke="var(--color-brass)" strokeWidth="1.25" vectorEffect="non-scaling-stroke" />
+        {mx !== undefined && <line x1={mx} x2={mx} y1={pad.t} y2={H - pad.b} stroke="var(--color-line-2)" vectorEffect="non-scaling-stroke" />}
+      </svg>
       {mx !== undefined && my !== undefined && (
-        <g>
-          <circle cx={mx} cy={my} r="3.5" fill="var(--color-ink)" stroke="var(--color-paper)" strokeWidth="1.25" />
-          <text x={mx + (mx > W * 0.7 ? -8 : 8)} y={Math.max(pad.t + 8, my - 6)} textAnchor={mx > W * 0.7 ? "end" : "start"} className="flow-label" style={{ fill: "var(--color-paper)" }}>now</text>
-        </g>
+        <>
+          <span className="curve-marker" style={{ left: pct(mx), top: my }} />
+          <span
+            className="curve-label"
+            style={{ color: "var(--color-paper)", top: Math.max(pad.t - 4, my - 16), ...(nowRight ? { right: `calc(${pct(W - mx)} + 8px)` } : { left: `calc(${pct(mx)} + 8px)` }) }}
+          >
+            now
+          </span>
+        </>
       )}
-      <text x={pad.l} y={H - 5} className="flow-label">00:00 UTC</text>
-      <text x={W - pad.r} y={H - 5} textAnchor="end" className="flow-label">24:00</text>
-      <text x={W - pad.r} y={y(floor) - 4} textAnchor="end" className="flow-label">floor</text>
-      <text x={pad.l} y={y(open) - 4} className="flow-label">open</text>
-    </svg>
+      <span className="curve-label" style={{ left: pct(pad.l), bottom: 4 }}>00:00 UTC</span>
+      <span className="curve-label" style={{ right: pct(pad.r), bottom: 4 }}>24:00</span>
+      <span className="curve-label" style={{ right: pct(pad.r), top: y(floor) - 13 }}>floor</span>
+      <span className="curve-label" style={{ left: pct(pad.l), top: y(open) - 13 }}>open</span>
+    </div>
   );
 }

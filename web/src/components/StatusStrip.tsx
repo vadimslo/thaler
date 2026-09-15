@@ -28,7 +28,7 @@ export function StatusStrip() {
 
   return (
     <div className="strip" aria-label="Network status">
-      <div className="strip-inner mx-auto max-w-6xl px-1 sm:px-2">
+      <div className="strip-inner px-1 sm:px-2">
         <Item v="Sepolia" />
         <Item k="Block" v={blockError ? "unreachable" : block === undefined ? NA : fmtInt(block)} />
         <Item v={`${fmtUtcTime(now || undefined)} UTC`} />
