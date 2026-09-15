@@ -3,6 +3,18 @@
     "version": "v0.1",
     "date": "2026-09-15",
     "title": "Testnet launch",
-    "body": "Testnet launch on Sepolia: currency, charters, central bank, flow hook, treasury, router. Contracts verified."
+    "body": "Testnet launch on Sepolia: currency, charters, central bank, flow hook, treasury, router. Six contracts verified on Etherscan. Every parameter published in the whitepaper."
+  },
+  {
+    "version": "v0.1.1",
+    "date": "2026-09-15",
+    "title": "Withdrawal fee, hardened treasury",
+    "body": "The exit fee now applies to every withdrawal, decaying from 60% at mint to 2% after thirty days; resolution is the final withdrawal. Genesis seed is atomic with pool creation. POL compounding is capped per tick and rate limited. Buyback caps read treasury-owned liquidity only. Allocation rolls epochs first. Accrual is booked per epoch boundary."
+  },
+  {
+    "version": "v0.2",
+    "date": "2026-09-16",
+    "title": "The app",
+    "body": "The site is now one application: Home, Banks, Auction House, Swap, Activity, Protocol Info. Live ledger of on-chain events, status strip with the epoch clock, hero illustrations. Writes carry a gas floor after two out-of-gas reverts from tight public RPC estimates."
   }
 ]
