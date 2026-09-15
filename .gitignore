@@ -21,3 +21,5 @@ REPORT.md
 .env.bots
 web/screenshots/
 web/DESIGN-PASS-*.md
+bots/state.json
+bots/.lock
