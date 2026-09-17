@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>com.vadim.thaler-activity</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/usr/bin/python3</string>
+		<string>/Users/vadimsl/thaler/bots/activity.py</string>
+	</array>
+	<key>WorkingDirectory</key>
+	<string>/Users/vadimsl/thaler/bots</string>
+	<key>StartInterval</key>
+	<integer>600</integer>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>PATH</key>
+		<string>/Users/vadimsl/.local/bin:/Users/vadimsl/.foundry/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+		<key>HOME</key>
+		<string>/Users/vadimsl</string>
+		<key>USER</key>
+		<string>vadimsl</string>
+	</dict>
+	<key>StandardOutPath</key>
+	<string>/Users/vadimsl/thaler/logs/launchd.activity.out.log</string>
+	<key>StandardErrorPath</key>
+	<string>/Users/vadimsl/thaler/logs/launchd.activity.err.log</string>
+	<key>Nice</key>
+	<integer>10</integer>
+	<key>ProcessType</key>
+	<string>Background</string>
+</dict>
+</plist>
